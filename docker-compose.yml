@@ -1,42 +1,47 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
     image: postgres:15
-    restart: always
     environment:
+      POSTGRES_DB: rails_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: rails_db
-    volumes:
-      - pgdata:/var/lib/postgresql/data
     networks:
       - app-network
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data:rw
 
   web:
-    build: .
+    build:
+      context: /home/iris1/iris-systems-recruitment-task-2025-Jishnu-Prasad888
     depends_on:
-      - db
+      db:
+        condition: service_started
+    deploy:
+      replicas: 3
     environment:
-      DATABASE_URL: "postgres://user:password@db:5432/rails_db"
+      DATABASE_URL: postgres://user:password@db:5432/rails_db
     networks:
       - app-network
-    deploy:
-      replicas: 3  # <-- This scales the web containers to 3 instances
 
   nginx:
     image: nginx:latest
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    ports:
-      - "80:80"
     depends_on:
-      - web
+      web:
+        condition: service_started
     networks:
       - app-network
-
-volumes:
-  pgdata:
+    ports:
+      - "80:80"
+    volumes:
+      - /home/iris1/iris-systems-recruitment-task-2025-Jishnu-Prasad888/nginx.conf:/etc/nginx/nginx.conf:ro
 
 networks:
   app-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
