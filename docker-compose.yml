@@ -19,12 +19,12 @@ services:
       - db
     environment:
       DATABASE_URL: "postgres://user:password@db:5432/rails_db"
-    ports:
-      - "3000:3000"
     networks:
       - app-network
+    deploy:
+      replicas: 3  # <-- This scales the web containers to 3 instances
 
-  nginx:  # Moved nginx under services
+  nginx:
     image: nginx:latest
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
